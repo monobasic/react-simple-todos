@@ -1,9 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
 import { Tasks } from '../api/tasks.js';
 import TaskList from './TaskList.jsx';
+import AccountsUIWrapper from  './AccountsUIWrapper.jsx';
+
 
 // App component - represents the whole app
 class App extends Component {
@@ -25,7 +28,9 @@ class App extends Component {
 		// Save task to mongo collection
 		Tasks.insert({
 			text,
-			createdAt: new Date() // current time
+			createdAt: new Date(), // current time
+			owner: Meteor.userId(), // _id of the logged in user
+			username: Meteor.user().username // username of the logged in user
 		});
 
 		// Clear Form
@@ -63,13 +68,18 @@ class App extends Component {
 						Hide completed Tasks
 					</label>
 
+					<AccountsUIWrapper></AccountsUIWrapper>
+
+					{ this.props.currentUser ?
 					<form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
 						<input
 						type="text"
 						ref="textInput"
 						placeholder="Type to add new tasks"
 						/>
-					</form>
+					</form> : ''
+					}
+
 				</header>
 
 				<TaskList tasks={filteredTasks}></TaskList>
@@ -80,12 +90,14 @@ class App extends Component {
 
 App.propTypes = {
 	tasks: PropTypes.array.isRequired,
-	incompleteCount: PropTypes.number.isRequired
+	incompleteCount: PropTypes.number.isRequired,
+	currentUser: PropTypes.object
 };
 
 export default createContainer(() => {
 	return {
 		tasks: Tasks.find({}, { sort: { createdAt : -1 }}).fetch(),
-		incompleteCount: Tasks.find({ checked: { $ne: true } }).count()
+		incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
+		currentUser: Meteor.user()
 	};
 }, App);
