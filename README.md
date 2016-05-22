@@ -1,2 +1,2 @@
-# React simple todos
-This is React's Todos tutorial app with some tweaks.
+# Meteor/React simple todos
+This is a simple Meteor.js/React.js Todos tutorial app.
